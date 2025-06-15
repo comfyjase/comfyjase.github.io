@@ -1,15 +1,31 @@
 <!DOCTYPE html>
 <html>
-<body>
-<h1>Hello World</h1>
-<p>I'm hosted with GitHub Pages.</p>
-<select name="dice" id="dice">
-  <option value="d2">d2</option>
-  <option value="d4">d4</option>
-  <option value="d6">d6</option>
-  <option value="d8">d8</option>
-  <option value="d10">d10</option>
-  <option value="d12">d12</option>
-</select>
-</body>
+	<head>
+		<script>
+			var totalRollValue = 0;
+			function rollDice(diceMaxNumber) {
+				totalRollValue = getRndInteger(1, diceMaxNumber);
+				document.getElementById("totalRollValue").innerHTML = totalRollValue;
+				return totalRollValue;
+			}
+			function getRndInteger(min, max) {
+				return Math.floor(Math.random() * (max - min) ) + min;
+			}
+		</script>
+	</head>
+	<body>
+		<h1>Hello World</h1>
+		<p>I'm hosted with GitHub Pages.</p>
+		<select name="dice" id="dice">
+			<option value="2">d2</option>
+			<option value="4">d4</option>
+			<option value="6">d6</option>
+			<option value="8">d8</option>
+			<option value="10">d10</option>
+			<option value="12">d12</option>
+			<option value="20">d20</option>
+		</select>
+		<button onclick="rollDice(dice.value)">Roll</button>
+		<p>Total: <span id="totalRollValue" style="color:blue"></span></p>
+	</body>
 </html>
