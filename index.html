@@ -3,15 +3,13 @@
 	<head>
 		<style>
 			.flex-container {
-			  display: flex;
-			  flex-direction: row;
+				display: flex;
+				flex-direction: row;
 			}
-
-			.flex4-container az xd> div {
-			  background-color: #f1f1f1;
-			  margin: 10px;
-			  padding: 20px;
-			  font-size: 30px;
+			
+			.flex-container > div {
+				margin: 5px;
+				padding: 5px;
 			}
 		</style>
 		<script>
@@ -20,6 +18,8 @@
 			
 			const multipleDiceSelection = [ "2d8", "3d6" ];
 			const selectedDice = [];
+			
+			var diceRollHistory = null;
 			
 			window.onload = init;
 
@@ -31,6 +31,8 @@
 						rollIndividualDice(event.target);
 					}
 				});
+				
+				diceRollHistory = document.getElementById("diceRollHistory");
 			}
 
 			// Random number generation
@@ -66,7 +68,7 @@
 					rollValue = getRndInteger(1, maximumValue);
 				}
 				
-				writeResult(rollValueElement, rollValue, maximumValue, calculationString);
+				writeResult(rollValueElement, diceType, rollValue, maximumValue, calculationString);
 				return rollValue;
 			}
 			
@@ -113,7 +115,7 @@
 			}
 			
 			// Writes the result at the end of the row (and any calculation strings).
-			function writeResult(element, rollValue, maximumValue, calculationString) {
+			function writeResult(element, diceType, rollValue, maximumValue, calculationString) {
 				var rollValueHTML = "";
 				// Rolled a natural 1.
 				if (rollValue == 1) {
@@ -130,116 +132,128 @@
 					rollValueHTML = rollValueHTML.replace("</p>", " " + calculationString + "</p>");
 				}
 				
-				element.innerHTML = rollValueHTML;
+				//element.innerHTML = rollValueHTML;
+				
+				var newListElement = document.createElement("li");
+				newListElement.innerHTML = rollValueHTML.replace("<p>", "<p>" + diceType + " : ");
+				diceRollHistory.append(newListElement);
 			}
 		</script>
 	</head>
 	<body>
 		<h1>Renegade Dice Roller</h1>
-		<div>
-			<table id="diceTable">
-				<tr class="tableRow">
-					<td>
-						<p>d2</p>
-					</td>
-					<td>
-						<button class="roll">Roll</button>
-					</td>
-					<td>
-						<p></p>
-					</td>
-				</tr>
-				<tr class="tableRow">
-					<td>
-						<p>d4</p>
-					</td>
-					<td>
-						<button class="roll">Roll</button>
-					</td>
-					<td>
-						<p></p>
-					</td>
-				</tr>
-				<tr class="tableRow">
-					<td>
-						<p>d6</p>
-					</td>
-					<td>
-						<button class="roll">Roll</button>
-					</td>
-					<td>
-						<p></p>
-					</td>
-				</tr>
-				<tr class="tableRow">
-					<td>
-						<p>d8</p>
-					</td>
-					<td>
-						<button class="roll">Roll</button>
-					</td>
-					<td>
-						<p></p>
-					</td>
-				</tr>
-				<tr class="tableRow">
-					<td>
-						<p>d10</p>
-					</td>
-					<td>
-						<button class="roll">Roll</button>
-					</td>
-					<td>
-						<p></p>
-					</td>
-				</tr>
-				<tr class="tableRow">
-					<td>
-						<p>d12</p>
-					</td>
-					<td>
-						<button class="roll">Roll</button>
-					</td>
-					<td>
-						<p></p>
-					</td>
-				</tr>
-				<tr class="tableRow">
-					<td>
-						<p>d20</p>
-					</td>
-					<td>
-						<button class="roll">Roll</button>
-					</td>
-					<td>
-						<p></p>
-					</td>
-				</tr>
-				<tr class="tableRow">
-					<td>
-						<p>2d8</p>
-					</td>
-					<td>
-						<button class="roll">Roll</button>
-					</td>
-					<td>
-						<p></p>
-					</td>
-				</tr>
-				<tr>
-					<td>
-						<p>3d6</p>
-					</td>
-					<td>
-						<button class="roll">Roll</button>
-					</td>
-					<td>
-						<p></p>
-					</td>
-				</tr>
-			</table>
-		</div>
-		<button onclick="rollAllDice()">Roll All</button>
-		<p>Total: <span id="totalRollValue" style="color:blue"></span></p>
+		<div class="flex-container">
+			<div>
+				<h4>Dice</h4>
+				<table id="diceTable">
+					<tr class="tableRow">
+						<td>
+							<p>d2</p>
+						</td>
+						<td>
+							<button class="roll">Roll</button>
+						</td>
+						<td>
+							<p></p>
+						</td>
+					</tr>
+					<tr class="tableRow">
+						<td>
+							<p>d4</p>
+						</td>
+						<td>
+							<button class="roll">Roll</button>
+						</td>
+						<td>
+							<p></p>
+						</td>
+					</tr>
+					<tr class="tableRow">
+						<td>
+							<p>d6</p>
+						</td>
+						<td>
+							<button class="roll">Roll</button>
+						</td>
+						<td>
+							<p></p>
+						</td>
+					</tr>
+					<tr class="tableRow">
+						<td>
+							<p>d8</p>
+						</td>
+						<td>
+							<button class="roll">Roll</button>
+						</td>
+						<td>
+							<p></p>
+						</td>
+					</tr>
+					<tr class="tableRow">
+						<td>
+							<p>d10</p>
+						</td>
+						<td>
+							<button class="roll">Roll</button>
+						</td>
+						<td>
+							<p></p>
+						</td>
+					</tr>
+					<tr class="tableRow">
+						<td>
+							<p>d12</p>
+						</td>
+						<td>
+							<button class="roll">Roll</button>
+						</td>
+						<td>
+							<p></p>
+						</td>
+					</tr>
+					<tr class="tableRow">
+						<td>
+							<p>d20</p>
+						</td>
+						<td>
+							<button class="roll">Roll</button>
+						</td>
+						<td>
+							<p></p>
+						</td>
+					</tr>
+					<tr class="tableRow">
+						<td>
+							<p>2d8</p>
+						</td>
+						<td>
+							<button class="roll">Roll</button>
+						</td>
+						<td>
+							<p></p>
+						</td>
+					</tr>
+					<tr>
+						<td>
+							<p>3d6</p>
+						</td>
+						<td>
+							<button class="roll">Roll</button>
+						</td>
+						<td>
+							<p></p>
+						</td>
+					</tr>
+				</table>	
+				<button onclick="rollAllDice()">Roll All</button>
+			</div>
+			<div>
+				<h4>Log</h4>
+				<ol id="diceRollHistory">
+				</ol>
+				<p>Total: <span id="totalRollValue" style="color:blue"></span></p>
+			</div>
+		</div>		
 	</body>
 </html>
