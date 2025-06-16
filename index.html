@@ -11,6 +11,10 @@
 				margin: 5px;
 				padding: 5px;
 			}
+			
+			ol li{
+			  list-style-type: none;
+			}
 		</style>
 		<script>
 			const failColour = "#FF0000";
@@ -20,6 +24,7 @@
 			const selectedDice = [];
 			
 			var diceRollHistory = null;
+			var totalRollValue = 0;
 			
 			window.onload = init;
 
@@ -33,6 +38,7 @@
 				});
 				
 				diceRollHistory = document.getElementById("diceRollHistory");
+				displayNewTotal();
 			}
 
 			// Random number generation
@@ -69,6 +75,8 @@
 				}
 				
 				writeResult(rollValueElement, diceType, rollValue, maximumValue, calculationString);
+				totalRollValue += rollValue;
+				displayNewTotal();
 				return rollValue;
 			}
 			
@@ -109,7 +117,6 @@
 					var row = table.rows[i];
 					calculatedTotal += rollDiceForRow(row);
 				};
-				document.getElementById("totalRollValue").innerHTML = calculatedTotal;
 				
 				return calculatedTotal;
 			}
@@ -137,6 +144,18 @@
 				var newListElement = document.createElement("li");
 				newListElement.innerHTML = rollValueHTML.replace("<p>", "<p>" + diceType + " : ");
 				diceRollHistory.append(newListElement);
+			}
+			
+			// Clear log
+			function clearRollHistory() {
+				diceRollHistory.innerHTML = "";
+				totalRollValue = 0;
+				displayNewTotal();
+			}
+			
+			// Updates the "Total: 0" UI to include all results added up from the log column.
+			function displayNewTotal() {
+				document.getElementById("totalRollValue").innerHTML = totalRollValue;
 			}
 		</script>
 	</head>
@@ -253,6 +272,7 @@
 				<ol id="diceRollHistory">
 				</ol>
 				<p>Total: <span id="totalRollValue" style="color:blue"></span></p>
+				<button onclick="clearRollHistory()">Clear</button>
 			</div>
 		</div>		
 	</body>
