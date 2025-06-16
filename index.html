@@ -1,14 +1,30 @@
 <!DOCTYPE html>
 <html>
 	<head>
+		<style>
+			.flex-container {
+			  display: flex;
+			  flex-direction: row;
+			}
+
+			.flex4-container az xd> div {
+			  background-color: #f1f1f1;
+			  margin: 10px;
+			  padding: 20px;
+			  font-size: 30px;
+			}
+		</style>
 		<script>
+			const failColour = "#FF0000";
+			const critColour = "#28B463";
+			
+			const multipleDiceSelection = [ "2d8", "3d6" ];
 			const selectedDice = [];
 			
 			window.onload = init;
 
+			// Listens for the user clicking on the roll buttons in the dice table.
 			function init(){
-				// the code to be called when the dom has loaded
-				// #document has its nodes
 				var table = document.getElementById("diceTable");
 				table.addEventListener("click", (event) => {
 					if (event.target.matches("button.roll")) {
@@ -17,119 +33,212 @@
 				});
 			}
 
+			// Random number generation
+			function getRndInteger(min, max) {
+				return Math.floor((Math.random() * max) + min);
+			}
+			
+			// Roll Functions
 			function rollIndividualDice(element) {		
 				const row = element.closest("tr");
 				return rollDiceForRow(row);
 			}
 			
+			// Rolls the dice for a given table row (e.g. the d2 row, the d10 row etc.).
 			function rollDiceForRow(row) {
 				const rollValueElement = row.cells[row.cells.length - 1];
-				let diceTypeElement = row.querySelector("select");
-				const maximumValue = diceTypeElement.value;
-				const rollValue = getRndInteger(1, maximumValue);
+				let diceTypeElement = row.cells[0];
+				const diceType = diceTypeElement.innerText;
+				var rollValue = 0;
+				var maximumValue = 0;
+				var calculationString = "";
 				
-				// <p>Total: <span id="totalRollValue" style="color:blue"></span></p>
-				var rollValueHTML = "";
-				// Rolled a natural 1.
-				if (rollValue == 1) {
-					rollValueHTML = "<p>Roll: <span style='color:red'>" + rollValue + " (Fumble)</span></p>";
-				// Rolled a crit.
-				} else if (rollValue == maximumValue) {
-					rollValueHTML = "<p>Roll: <span style='color:green'>" + rollValue + " (Crit)</span></p>";
-				// Rolled a normal number.
+				if (multipleDiceSelection.includes(diceType)) {
+					const indexOfD = diceType.lastIndexOf("d");
+					const diceValue = diceType.substr(indexOfD + 1);
+					const numberOfRolls = diceType.substr(0, indexOfD);
+					const { localRollValue, localCalculationString } = rollMultipleDice(diceValue, numberOfRolls);	
+					
+					rollValue = localRollValue;
+					calculationString = localCalculationString;
 				} else {
-					rollValueHTML = "<p>Roll: " + rollValue + "</p>";
+					maximumValue = diceType.replace("d", "");
+					rollValue = getRndInteger(1, maximumValue);
 				}
-				// TODO: Some text colouring?
-				rollValueElement.innerHTML = rollValueHTML;
+				
+				writeResult(rollValueElement, rollValue, maximumValue, calculationString);
 				return rollValue;
 			}
 			
-			function getRndInteger(min, max) {
-				return Math.floor((Math.random() * max) + min);
+			// E.g. Rolls specific dice: 2d6, 3d8 etc. and gives their total and calculations.
+			function rollMultipleDice(diceValue, amountOfRolls) {				
+				var localRollValue = 0;
+				var localCalculationString = "";
+				
+				localCalculationString = "( ";
+				for (let i = 0; i < amountOfRolls; i++) {
+					const dRollValue = getRndInteger(1, diceValue);
+					localRollValue += dRollValue;
+					var str = "";
+					if (dRollValue == 1) {
+						str = "<span style='color:" + failColour + ";font-weight:bold;'>" + dRollValue + "</span>";
+					} else if (dRollValue == diceValue) {
+						str = "<span style='color:" + critColour + ";font-weight:bold;'>" + dRollValue + "</span>";
+					} else {
+						str = dRollValue;
+					}
+					
+					localCalculationString += str;
+					
+					if (i < amountOfRolls - 1) {
+						localCalculationString += " + ";
+					}
+				}
+				localCalculationString += " )";
+				return { localRollValue, localCalculationString };
 			}
 			
-			function createRow() {
-				var row = document.createElement("tr");
-				var removeRowColumn = document.createElement("td");
-				var diceTypeColumn = document.createElement("td");
-				var rollButtonColumn = document.createElement("td");
-				var rollValueColumn = document.createElement("td");
-				
-				row.appendChild(removeRowColumn);
-				row.appendChild(diceTypeColumn);
-				row.appendChild(rollButtonColumn);
-				row.appendChild(rollValueColumn);
-				
-				removeRowColumn.innerHTML = "<button class='remove' onclick='removeRow(this)'>Remove</button>";
-				diceTypeColumn.innerHTML = "<select class='diceType'>" +
-						"<option value='2'>d2</option>" +
-						"<option value='4'>d4</option>" +
-						"<option value='6'>d6</option>" +
-						"<option value='8'>d8</option>" +
-						"<option value='10'>d10</option>" +
-						"<option value='12'>d12</option>" +
-						"<option value='20'>d20</option>" +
-					"</select>";
-				rollButtonColumn.innerHTML = "<button class='roll'>Roll</button>";
-				rollValueColumn.innerHTML = "<p></p>";
-				
-				var table = document.getElementById("diceTable");
-				table.appendChild(row);
-			}
-			
-			function removeRow(element) {
-				const row = element.closest("tr");
-				var table = document.getElementById("diceTable");
-				table.deleteRow(row.rowIndex);
-			}
-			
+			// Rolls all available dice together and totals them.
 			function rollAllDice() {
 				var table = document.getElementById("diceTable");
 				
 				calculatedTotal = 0;
-				for (let i = 1; i < table.rows.length; i++) { 
+				for (let i = 0; i < table.rows.length; i++) { 
 					var row = table.rows[i];
 					calculatedTotal += rollDiceForRow(row);
-					//alert(row.cells.length);
 				};
 				document.getElementById("totalRollValue").innerHTML = calculatedTotal;
 				
 				return calculatedTotal;
 			}
+			
+			// Writes the result at the end of the row (and any calculation strings).
+			function writeResult(element, rollValue, maximumValue, calculationString) {
+				var rollValueHTML = "";
+				// Rolled a natural 1.
+				if (rollValue == 1) {
+					rollValueHTML = "<p>Result: <span style='color:" + failColour + ";font-weight:bold;'>" + rollValue + "</span></p>";
+				// Rolled a crit.
+				} else if (rollValue == maximumValue) {
+					rollValueHTML = "<p>Result: <span style='color:" + critColour + ";font-weight:bold;'>" + rollValue + "</span></p>";
+				// Rolled a normal number.
+				} else {
+					rollValueHTML = "<p>Result: " + rollValue + "</p>";
+				}
+				
+				if (calculationString != "") {
+					rollValueHTML = rollValueHTML.replace("</p>", " " + calculationString + "</p>");
+				}
+				
+				element.innerHTML = rollValueHTML;
+			}
 		</script>
 	</head>
 	<body>
 		<h1>Renegade Dice Roller</h1>
-		<table id="diceTable">
-			<tr>
-				<td>
-					<button class="add" onclick="createRow()">Add</button>
-				</td>
-			</tr>
-			<tr class="tableRow">
-				<td>
-					<button class="remove" onclick="removeRow(this)">Remove</button>
-				</td>
-				<td>
-					<select class="diceType">
-						<option value="2">d2</option>
-						<option value="4">d4</option>
-						<option value="6">d6</option>
-						<option value="8">d8</option>
-						<option value="10">d10</option>
-						<option value="12">d12</option>
-						<option value="20">d20</option>
-					</select>
-				</td>
-				<td>
-					<button class="roll">Roll</button>
-				</td>
-				<td>
-					<p></p>
-				</td>
-			</tr>
-		</table>
+		<div>
+			<table id="diceTable">
+				<tr class="tableRow">
+					<td>
+						<p>d2</p>
+					</td>
+					<td>
+						<button class="roll">Roll</button>
+					</td>
+					<td>
+						<p></p>
+					</td>
+				</tr>
+				<tr class="tableRow">
+					<td>
+						<p>d4</p>
+					</td>
+					<td>
+						<button class="roll">Roll</button>
+					</td>
+					<td>
+						<p></p>
+					</td>
+				</tr>
+				<tr class="tableRow">
+					<td>
+						<p>d6</p>
+					</td>
+					<td>
+						<button class="roll">Roll</button>
+					</td>
+					<td>
+						<p></p>
+					</td>
+				</tr>
+				<tr class="tableRow">
+					<td>
+						<p>d8</p>
+					</td>
+					<td>
+						<button class="roll">Roll</button>
+					</td>
+					<td>
+						<p></p>
+					</td>
+				</tr>
+				<tr class="tableRow">
+					<td>
+						<p>d10</p>
+					</td>
+					<td>
+						<button class="roll">Roll</button>
+					</td>
+					<td>
+						<p></p>
+					</td>
+				</tr>
+				<tr class="tableRow">
+					<td>
+						<p>d12</p>
+					</td>
+					<td>
+						<button class="roll">Roll</button>
+					</td>
+					<td>
+						<p></p>
+					</td>
+				</tr>
+				<tr class="tableRow">
+					<td>
+						<p>d20</p>
+					</td>
+					<td>
+						<button class="roll">Roll</button>
+					</td>
+					<td>
+						<p></p>
+					</td>
+				</tr>
+				<tr class="tableRow">
+					<td>
+						<p>2d8</p>
+					</td>
+					<td>
+						<button class="roll">Roll</button>
+					</td>
+					<td>
+						<p></p>
+					</td>
+				</tr>
+				<tr>
+					<td>
+						<p>3d6</p>
+					</td>
+					<td>
+						<button class="roll">Roll</button>
+					</td>
+					<td>
+						<p></p>
+					</td>
+				</tr>
+			</table>
+		</div>
 		<button onclick="rollAllDice()">Roll All</button>
 		<p>Total: <span id="totalRollValue" style="color:blue"></span></p>
 	</body>
